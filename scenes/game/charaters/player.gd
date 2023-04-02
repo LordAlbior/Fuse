@@ -4,22 +4,33 @@ extends CharacterBody2D
 @export var jump_height: float = 50
 @export var jump_time_to_peak: float = 0.5
 @export var jump_time_to_descent: float = 0.4
-@export var extra_jump: int = 1
+@export var wall_jump_height: float = 50
+@export var wall_jump_knockback: float = 50
+
+@export var extra_jump: int
+@export_range(0.0, 1.0, 0.01) var movement_smoothing: float = 0.2
 
 @onready var jump_velocity: float = ((2.0 * jump_height) / jump_time_to_peak) * -1.0
 @onready var jump_gravity: float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1.0
 @onready var fall_gravity: float = ((-2.0 * jump_height) / (jump_time_to_descent * jump_time_to_descent)) * -1.0
+@onready var wall_jump_velocity: float = ((2.0 * wall_jump_height) / jump_time_to_peak) * -1.0
+@onready var wall_jump_knockback_velocity: float = ((2.0 * wall_jump_knockback) / jump_time_to_peak) * -1.0
 @onready var coyote_timer: Timer = $CoyoteTimer
+@onready var wall_detector: RayCast2D = $WallDetector
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite
 
-var jump_count = 0
+var facing = 0
 
 func _physics_process(delta):
 	velocity.y += get_gravity() * delta
-	velocity.x = get_input_velocity() * move_speed
+	velocity.x = lerp(velocity.x, get_input_velocity() * move_speed, movement_smoothing) 
 	
-	if Input.is_action_just_pressed("jump") and ( is_on_floor() || !coyote_timer.is_stopped()):
-		coyote_timer.stop()
-		jump()
+	if Input.is_action_just_pressed("jump"): 
+		if ( is_on_floor() || !coyote_timer.is_stopped()):
+			coyote_timer.stop()
+			jump()
+		elif wall_detector.is_colliding():
+			wall_jump()
 	
 	var was_on_floor = is_on_floor()
 	
@@ -27,19 +38,30 @@ func _physics_process(delta):
 	
 	if !is_on_floor() && was_on_floor:
 		coyote_timer.start()
+		
 
 func get_gravity() -> float:
 	return jump_gravity if velocity.y < 0.0 else fall_gravity
 
-func jump():
-	velocity.y = jump_velocity
 
 func get_input_velocity() -> float:
-	var horizontal := 0.0
+	var horizontal = 0.0
+	horizontal = Input.get_action_strength("right") - Input. get_action_strength("left")
 	
-	if Input.is_action_pressed("left"):
-		horizontal -= 1.0
-	if Input.is_action_pressed("right"):
-		horizontal += 1.0
-	
+	if horizontal < 0:
+		animated_sprite.flip_h = true
+		wall_detector.rotation_degrees = 90
+		facing = 1 
+	if horizontal > 0:
+		animated_sprite.flip_h = false
+		wall_detector.rotation_degrees = -90
+		facing = -1
+
 	return horizontal
+
+func wall_jump():
+	velocity.x = (-facing) * wall_jump_knockback_velocity
+	velocity.y = wall_jump_velocity
+
+func jump():
+	velocity.y = jump_velocity

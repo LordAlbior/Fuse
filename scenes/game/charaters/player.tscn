@@ -240,9 +240,10 @@ height = 28.0
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_45erk")
+move_speed = 100.0
 
 [node name="AnimatedSprite" type="AnimatedSprite2D" parent="."]
-position = Vector2(0, -16)
+position = Vector2(0, -13)
 sprite_frames = SubResource("SpriteFrames_h4qiv")
 animation = &"jump_start"
 autoplay = "idle"
@@ -256,5 +257,10 @@ shape = SubResource("CapsuleShape2D_lc8xc")
 [node name="CoyoteTimer" type="Timer" parent="."]
 wait_time = 0.1
 one_shot = true
+
+[node name="WallDetector" type="RayCast2D" parent="."]
+position = Vector2(0, -14)
+rotation = -1.5708
+target_position = Vector2(0, 10)
 
 [connection signal="animation_finished" from="AnimatedSprite" to="." method="_on_animated_sprite_2d_animation_finished"]
