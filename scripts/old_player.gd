@@ -21,17 +21,29 @@ extends CharacterBody2D
 
 var facing = 0
 
+
 func _physics_process(delta):
+	var input_velocity = get_input_velocity()
 	velocity.y += get_gravity() * delta
-	velocity.x = lerp(velocity.x, get_input_velocity() * move_speed, movement_smoothing) 
+	velocity.x = lerp(velocity.x, input_velocity * move_speed, movement_smoothing) 
+	
+
+	if is_on_floor():
+		if input_velocity == 0:
+			animated_sprite.play("idle")
+		else:
+			animated_sprite.play("run")
 	
 	if Input.is_action_just_pressed("jump"): 
 		if ( is_on_floor() || !coyote_timer.is_stopped()):
 			coyote_timer.stop()
 			jump()
-		elif wall_detector.is_colliding():
-			wall_jump()
-	
+		
+	if wall_detector.is_colliding() && !is_on_floor():
+			if Input.is_action_just_pressed("jump"):
+				wall_jump()
+				
+
 	var was_on_floor = is_on_floor()
 	
 	move_and_slide() 
@@ -51,17 +63,22 @@ func get_input_velocity() -> float:
 	if horizontal < 0:
 		animated_sprite.flip_h = true
 		wall_detector.rotation_degrees = 90
-		facing = 1 
+		facing = horizontal 
 	if horizontal > 0:
 		animated_sprite.flip_h = false
 		wall_detector.rotation_degrees = -90
-		facing = -1
+		facing = horizontal
+	
 
 	return horizontal
 
 func wall_jump():
-	velocity.x = (-facing) * wall_jump_knockback_velocity
+	animated_sprite.play("jump_start")
+	velocity.x = facing * wall_jump_knockback_velocity
 	velocity.y = wall_jump_velocity
 
 func jump():
+	animated_sprite.play("jump_start")
 	velocity.y = jump_velocity
+
+

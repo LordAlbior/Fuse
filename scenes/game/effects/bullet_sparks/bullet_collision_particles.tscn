@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://cwe4p2vkpucl6"]
+
+[ext_resource type="Script" path="res://scenes/game/effects/bullet_sparks/bullet_collision_particles.gd" id="1_4hrba"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_7qxji"]
+lifetime_randomness = 0.1
+particle_flag_disable_z = true
+spread = 180.0
+flatness = 0.25
+gravity = Vector3(0, 0, 0)
+initial_velocity_min = 19.67
+initial_velocity_max = 36.07
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+collision_mode = 1
+collision_friction = 0.0
+collision_bounce = 0.12
+
+[node name="BulletCollisionParticles" type="GPUParticles2D"]
+emitting = false
+amount = 40
+process_material = SubResource("ParticleProcessMaterial_7qxji")
+lifetime = 0.2
+one_shot = true
+explosiveness = 0.65
+randomness = 0.97
+script = ExtResource("1_4hrba")
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
